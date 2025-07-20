@@ -1,13 +1,63 @@
-# sub-web-modify
-[本项目](https://suburl.v1.mk)重制[原项目](https://github.com/CareyWang/sub-web)CSS样式，兼容nodejs最新版本（可直接一键部署至Vercel），解决大部分布局细节问题，增加“暗黑模式”，默认自动切换亮/暗模式（点击“太阳/月亮”图标可手动切换），增加“高级功能”点击显示/隐藏，添加短链接选择/自定义功能，增加近百条远程配置，新增[sub-web聚合API](https://github.com/youshandefeiyang/sub-web-api)，增加从短链接中获取订阅信息并返回至前端界面，增加上传自定义远程配置/JS进阶排序节点/JS进阶筛选节点等功能，感兴趣的朋友可以自建API服务，增加URL传参设置自定义后端<br/>
-## 效果预览：
-![avatar](https://raw.githubusercontent.com/youshandefeiyang/webcdn/main/sub-web-modify.GIF)
-### 使用方法：
-建议使用Docker一键部署:
-```
-docker run -d --restart unless-stopped --privileged=true -p 8090:80 --name sub-web-modify youshandefeiyang/sub-web-modify
-```
-访问地址举例:
-```
-http://192.168.10.1:8090/?backend=https://url.v1.mk
-```
+# sub-web-modify · 订阅转换前端 (MGX 精简版)
+
+![Docker Pulls](https://img.shields.io/docker/pulls/doctor/sub-web-modify)
+![Image Size](https://img.shields.io/docker/image-size/doctor/sub-web-modify/latest)
+
+> **基于 [youshandefeiyang/sub-web-modify] 魔改**  
+> - 去广告、去推广  
+> - 仅保留本地后端 `http://localhost:25500`  
+> - 远程配置精简为 `MGX.ini`  
+> - 默认暗黑 / 亮色自动跟随系统  
+> - 支持生成 Clash / Surge / Sing-box / v2ray / Trojan 等多格式订阅  
+>
+> 后端请搭配 **魔改版 subconverter**（支持 ‑ vless/reality、hysteria、hysteria2、tuic5）。
+
+---
+
+## 目录
+
+- [镜像标签](#镜像标签)
+- [快速开始](#快速开始)
+- [环境变量](#环境变量)
+- [版本更新](#版本更新)
+- [许可协议](#许可协议)
+
+---
+
+## 镜像标签
+
+| 标签 | 基础镜像 | 说明 |
+|------|----------|------|
+| `latest` | `nginx:1.24-alpine` | 滚动更新 |
+| `2025.07.20` | 同上 | 对应 Git commit `abcdefg` |
+
+---
+
+## 快速开始
+
+```bash
+# ① 拉取前端
+docker pull doctor/sub-web-modify:latest
+
+# ② 拉取后端（魔改版）
+docker pull asdlokj1qpi23/subconverter:latest
+
+# ③ 单机 docker-compose
+cat > docker-compose.yml <<'EOF'
+version: '3.9'
+services:
+  subconverter:
+    image: asdlokj1qpi23/subconverter:latest
+    container_name: subconverter
+    ports:
+      - "25500:25500"
+  sub-web:
+    image: doctor/sub-web-modify:latest
+    container_name: sub-web
+    ports:
+      - "8090:80"
+    environment:
+      - VUE_APP_BACKEND_URL=http://subconverter:25500
+EOF
+
+docker compose up -d
