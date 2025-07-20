@@ -984,17 +984,21 @@ export default {
             this.loading2 = false;
           })
     },
-getBackendVersion() {
-  this.$axios.get(this.form.customBackend + "/version")
-    .then(res => {
-      this.backendVersion = res.data.replace(/backend\n$/gm, "")
-                                    .replace("subconverter", "SubConverter");
-      this.$message.success(this.backendVersion);
-    })
-    .catch(() => {
-      this.$message.error("请求 SubConverter 版本号失败，该后端不可用！");
-    });
-}
-
+    getBackendVersion() {
+      this.$axios
+          .get(
+              this.form.customBackend + "/version"
+          )
+          .then(res => {
+            this.backendVersion = res.data.replace(/backend\n$/gm, "");
+            this.backendVersion = this.backendVersion.replace("subconverter", "SubConverter");
+            let a = this.form.customBackend.indexOf("url.v1.mk") !== -1 || this.form.customBackend.indexOf("sub.d1.mk") !== -1;
+            let b = this.form.customBackend.indexOf("127.0.0.1") !== -1;
+            this.$message.success(this.backendVersion);          })
+          .catch(() => {
+            this.$message.error("请求SubConverter版本号返回数据失败，该后端不可用！");
+          });
+    }
+  }
 };
 </script>
