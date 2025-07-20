@@ -624,11 +624,8 @@ export default {
     gotoYouTuBe() {
       window.open(yglink);
     },
-    toolsDown() {
-      window.open(downld);
-    },
     gotoBasicVideo() {
-      this.$alert("别忘了关注友善的肥羊哦！", {
+      this.$alert("", {
         type: "warning",
         confirmButtonText: '确定',
         customClass: 'msgbox',
@@ -639,7 +636,7 @@ export default {
           });
     },
     gotoAdvancedVideo() {
-      this.$alert("别忘了关注友善的肥羊哦！", {
+      this.$alert("", {
         type: "warning",
         confirmButtonText: '确定',
         customClass: 'msgbox',
