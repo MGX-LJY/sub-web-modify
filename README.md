@@ -10,7 +10,7 @@
 > - 默认暗黑 / 亮色自动跟随系统  
 > - 支持生成 Clash / Surge / Sing-box / v2ray / Trojan 等多格式订阅  
 >
-> 后端请搭配 **魔改版 subconverter**（支持 ‑ vless/reality、hysteria、hysteria2、tuic5）。
+> 后端使用 **[tindy2013/subconverter](https://github.com/tindy2013/subconverter)** 官方版本。
 
 ---
 
@@ -39,15 +39,15 @@
 # ① 拉取前端
 docker pull doctor/sub-web-modify:latest
 
-# ② 拉取后端（魔改版）
-docker pull asdlokj1qpi23/subconverter:latest
+# ② 拉取官方后端
+docker pull tindy2013/subconverter:latest
 
 # ③ 单机 docker-compose
 cat > docker-compose.yml <<'EOF'
 version: '3.9'
 services:
   subconverter:
-    image: asdlokj1qpi23/subconverter:latest
+    image: tindy2013/subconverter:latest
     container_name: subconverter
     ports:
       - "25500:25500"
