@@ -1,0 +1,75 @@
+diff --git a/src/parser/subparser.cpp b/src/parser/subparser.cpp
+--- a/src/parser/subparser.cpp
++++ b/src/parser/subparser.cpp
+@@ -1392,9 +1392,11 @@ void explodeClash(Node node, std::vector<Proxy> &nodes)
+         case "anytls"_hash:
+             group = ANYTLS_DEFAULT_GROUP;
+             singleproxy["password"] >>= password;
+             singleproxy["sni"] >>= sni;
++            singleproxy["fingerprint"] >>= fingerprint;
+ 
+             anyTLSConstruct(node, group, ps, server, port, password, sni, udp, tfo, scv, underlying_proxy);
++            node.Fingerprint = fingerprint;
+             break;
+         default:
+             continue;
+@@ -1692,7 +1694,7 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
+         std::string plugin, pluginopts, pluginopts_mode, pluginopts_host, mod_url, mod_md5; //ss
+         std::string id, net, tls, host, edge, path; //v2
+         std::string protocol, protoparam; //ssr
+-        std::string section, ip, ipv6, private_key, public_key, mtu, test_url, client_id, peer, keepalive; //wireguard
++        std::string section, ip, ipv6, private_key, public_key, mtu, test_url, client_id, peer, keepalive, fingerprint; //wireguard/anytls
+         string_array dns_servers;
+         string_multimap wireguard_config;
+         std::string version, aead = "1";
+@@ -2118,10 +2120,14 @@ bool explodeSurge(std::string surge, std::vector<Proxy> &nodes)
+                 case "skip-cert-verify"_hash:
+                     scv = itemVal;
+                     break;
++                case "server-cert-fingerprint-sha256"_hash:
++                    fingerprint = itemVal;
++                    break;
+                 }
+             }
+ 
+             anyTLSConstruct(node, ANYTLS_DEFAULT_GROUP, remarks, server, port, password, host, udp, tfo, scv, "");
++            node.Fingerprint = fingerprint;
+             break;
+         default:
+             switch(hash_(remarks))
+diff --git a/src/generator/config/subexport.cpp b/src/generator/config/subexport.cpp
+--- a/src/generator/config/subexport.cpp
++++ b/src/generator/config/subexport.cpp
+@@ -564,6 +564,8 @@ std::string proxyToClash(std::vector<Proxy> &nodes, const std::string &base_conf,
+                 singleproxy["sni"] = x.SNI;
+             if (!scv.is_undef())
+                 singleproxy["skip-cert-verify"] = scv.get();
++            if (!x.Fingerprint.empty())
++                singleproxy["fingerprint"] = x.Fingerprint;
+             break;
+         default:
+             continue;
+@@ -980,6 +982,23 @@ std::string proxyToSurge(std::vector<Proxy> &nodes, const std::string &base_conf,
+             proxy = "anytls, " + hostname + ", " + port + ", password=" + password;
+             if(!x.SNI.empty())
+                 proxy += ",sni=" + x.SNI;
++            if(!x.Fingerprint.empty())
++            {
++                std::string cert_fingerprint = x.Fingerprint;
++                if(cert_fingerprint.size() == 64 && cert_fingerprint.find(':') == std::string::npos)
++                {
++                    std::string formatted;
++                    formatted.reserve(95);
++                    for(size_t i = 0; i < cert_fingerprint.size(); i += 2)
++                    {
++                        if(!formatted.empty())
++                            formatted += ':';
++                        formatted += cert_fingerprint.substr(i, 2);
++                    }
++                    cert_fingerprint = formatted;
++                }
++                proxy += ",server-cert-fingerprint-sha256=" + cert_fingerprint;
++            }
+             break;
+         default:
+             continue;

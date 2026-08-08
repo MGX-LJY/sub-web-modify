@@ -224,6 +224,14 @@
                     :disabled="customSubUrl.length === 0"
                 >生成短链接
                 </el-button>
+                <el-button
+                    v-if="form.clientType.includes('surge')"
+                    style="width: 140px"
+                    type="success"
+                    @click="downloadSurge"
+                    :disabled="customSubUrl.length === 0"
+                >下载 Surge 6 配置
+                </el-button>
               </el-form-item>
               <el-form-item label-width="0px" style="text-align: center">
                 <el-button
@@ -387,33 +395,16 @@ export default {
       options: {
         clientTypes: {
           Clash: "clash",
-          "Surge4/5": "surge&ver=4",
-          "Sing-Box": "singbox",
-          V2Ray: "v2ray",
-          Trojan: "trojan",
-          ShadowsocksR: "ssr",
-          "混合订阅（mixed）": "mixed",
-          Surfboard: "surfboard",
-          Quantumult: "quan",
-          "Quantumult X": "quanx",
-          Loon: "loon",
-          Mellow: "mellow",
-          Surge3: "surge&ver=3",
-          Surge2: "surge&ver=2",
-          ClashR: "clashr",
-          "Shadowsocks(SIP002)": "ss",
-          "Shadowsocks Android(SIP008)": "sssub",
-          ShadowsocksD: "ssd",
-          "自动判断客户端": "auto",
+          "Surge 6": "surge&ver=5",
         },
         shortTypes: {
           "MGX": "https://v1.mk/short",
         },
         customBackend: {
-          "MGX": "http://localhost:25500",
+          "MGX": defaultBackend,
         },
         backendOptions: [
-          {value: "http://localhost:25500"},
+          {value: defaultBackend},
         ],
         remoteConfig: [
           {
@@ -421,7 +412,7 @@ export default {
             options: [
               {
                 label: "MGX",
-                value: "https://raw.githubusercontent.com/MGX-LJY/ACL4SSR/main/Clash/config/MGX.ini"
+                value: "https://raw.githubusercontent.com/MGX-LJY/ACL4SSR/main/Clash/config/MGX_list.ini"
               }
             ]
           },
@@ -430,9 +421,9 @@ export default {
       form: {
         sourceSubUrl: "",
         clientType: "",
-        customBackend: this.getUrlParam() == "" ? "http://localhost:25500" : this.getUrlParam(),
+        customBackend: this.getUrlParam() == "" ? defaultBackend : this.getUrlParam(),
         shortType: "https://v1.mk/short",
-        remoteConfig: "https://raw.githubusercontent.com/MGX-LJY/ACL4SSR/main/Clash/config/MGX.ini",
+        remoteConfig: "https://raw.githubusercontent.com/MGX-LJY/ACL4SSR/main/Clash/config/MGX_list.ini",
         excludeRemarks: "",
         includeRemarks: "",
         filename: "",
@@ -443,9 +434,9 @@ export default {
         nodeList: false,
         extraset: false,
         tls13: false,
-        udp: false,
+        udp: true,
         xudp: false,
-        tfo: false,
+        tfo: true,
         sort: false,
         expand: true,
         scv: false,
@@ -486,7 +477,7 @@ export default {
     this.isPC = this.$getOS().isPc;
   },
   mounted() {
-    this.form.clientType = "surge&ver=4";
+    this.form.clientType = "surge&ver=5";
     this.getBackendVersion();
     this.anhei();
     let lightMedia = window.matchMedia('(prefers-color-scheme: light)');
@@ -551,6 +542,13 @@ export default {
     onCopy() {
       this.$message.success("已复制");
     },
+    downloadSurge() {
+      if (!this.customSubUrl) {
+        this.$message.error("请先生成订阅链接");
+        return;
+      }
+      window.location.href = this.customSubUrl;
+    },
     makeUrl() {
       if (this.form.sourceSubUrl === "" || this.form.clientType === "") {
         this.$message.error("订阅链接与客户端为必填项");
@@ -582,10 +580,10 @@ export default {
         this.customSubUrl +=
             "&include=" + encodeURIComponent(this.form.includeRemarks);
       }
-      if (this.form.filename !== "") {
-        this.customSubUrl +=
-            "&filename=" + encodeURIComponent(this.form.filename);
-      }
+      const outputFilename = this.form.filename.trim() ||
+          (this.form.clientType.includes("surge") ? "MGX-Surge6.conf" : "MGX-Clash.yaml");
+      this.customSubUrl +=
+          "&filename=" + encodeURIComponent(outputFilename);
       if (this.form.rename !== "") {
         this.customSubUrl +=
             "&rename=" + encodeURIComponent(this.form.rename);
